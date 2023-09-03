@@ -16,7 +16,7 @@ class _SpaceScreenState extends State<SpaceScreen> {
   double mouseX = 0;
   double mouseY = 0;
   bool isMouseDown = false;
-  final List<Asteroid> asteroids = [];
+  final List<Projectile> projectiles = [];
   final random = Random();
   late double viewportWidth;
   late double viewportHeight;
@@ -39,8 +39,8 @@ class _SpaceScreenState extends State<SpaceScreen> {
 
   initGameData() {
     spawnTimer = Timer.periodic(const Duration(seconds: 3), (timer) {
-      if (asteroids.where((element) => !element.isBullet).length < 10) {
-        genAsteroids();
+      if (projectiles.where((element) => !element.isBullet).length < 10) {
+        genProjectiles();
       }
     });
     playTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
@@ -49,8 +49,8 @@ class _SpaceScreenState extends State<SpaceScreen> {
         gameDuration = formatDuration(duration);
       });
     });
-    genAsteroids();
-    moveAsteroids();
+    genProjectiles();
+    moveprojectiles();
   }
 
   @override
@@ -70,7 +70,7 @@ class _SpaceScreenState extends State<SpaceScreen> {
 
   void startGame() {
     setState(() {
-      asteroids.clear();
+      projectiles.clear();
       isGameEnded = false;
     });
     initGameData();
@@ -121,8 +121,8 @@ class _SpaceScreenState extends State<SpaceScreen> {
                             mouseX - viewportWidth / 2);
                       },
                       child: CustomPaint(
-                        painter:
-                            SpacePainter(mouseX, mouseY, asteroids, mouseAngle),
+                        painter: SpacePainter(
+                            mouseX, mouseY, projectiles, mouseAngle),
                         child: const SizedBox.expand(),
                       ),
                     ),
@@ -135,8 +135,8 @@ class _SpaceScreenState extends State<SpaceScreen> {
 
   void fireBulltet() {
     double radius = 5;
-    asteroids.add(
-      Asteroid(
+    projectiles.add(
+      Projectile(
         radius: radius,
         x: mouseX + 20,
         y: mouseY + -15,
@@ -147,12 +147,12 @@ class _SpaceScreenState extends State<SpaceScreen> {
     );
   }
 
-  void moveAsteroids() {
+  void moveprojectiles() {
     moveTimer = Timer.periodic(const Duration(milliseconds: 100), (timer) {
       if (isGameEnded) {
         return;
       }
-      for (final asteroid in asteroids) {
+      for (final asteroid in projectiles) {
         if (!asteroid.isDestroyed) {
           if (asteroid.isBullet) {
             asteroid.x += asteroid.velocityX * asteroid.xAngle;
@@ -172,7 +172,7 @@ class _SpaceScreenState extends State<SpaceScreen> {
 
           // detect collision with bullet and asteroid
           if (asteroid.isBullet) {
-            for (final asteroid2 in asteroids) {
+            for (final asteroid2 in projectiles) {
               if (!asteroid2.isBullet && !asteroid2.isDestroyed) {
                 final distance = sqrt(
                   pow(asteroid.x - asteroid2.x, 2) +
@@ -205,12 +205,12 @@ class _SpaceScreenState extends State<SpaceScreen> {
     });
   }
 
-  void genAsteroids() {
+  void genProjectiles() {
     double radius = random.nextInt(50).toDouble() + 5;
     bool genOnXAxis = random.nextBool();
 
-    asteroids.add(
-      Asteroid(
+    projectiles.add(
+      Projectile(
         radius: radius,
         x: genOnXAxis ? (random.nextDouble() * viewportWidth) - 10 : 0,
         y: genOnXAxis ? 0 : (random.nextDouble() * viewportHeight) - 10,
@@ -219,7 +219,7 @@ class _SpaceScreenState extends State<SpaceScreen> {
   }
 }
 
-class Asteroid {
+class Projectile {
   double x;
   double y;
   late double initX;
@@ -232,7 +232,7 @@ class Asteroid {
   final double xAngle;
   final double yAngle;
 
-  Asteroid({
+  Projectile({
     required this.x,
     required this.y,
     required this.radius,
@@ -250,16 +250,16 @@ class Asteroid {
 }
 
 class SpacePainter extends CustomPainter {
-  final List<Asteroid> asteroids;
+  final List<Projectile> projectiles;
   final double mouseX;
   final double mouseY;
   final double mouseAngle;
 
-  SpacePainter(this.mouseX, this.mouseY, this.asteroids, this.mouseAngle);
+  SpacePainter(this.mouseX, this.mouseY, this.projectiles, this.mouseAngle);
 
   @override
   void paint(Canvas canvas, Size size) {
-    for (final asteroid in asteroids) {
+    for (final asteroid in projectiles) {
       if (!asteroid.isDestroyed) {
         final paint = Paint()
           ..color = asteroid.isBullet ? Colors.white : Colors.red
